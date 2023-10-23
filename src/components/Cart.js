@@ -1,61 +1,105 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { removeFromCart, incrementQuantity, decrementQuantity } from '../redux/actions';
-import './Cart.css'; // Import your CSS styles
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { removeFromCart } from "../redux/CartSlice";
+let Cart = () => {
 
-const Cart = ({ cartItems, removeFromCart, incrementQuantity, decrementQuantity }) => {
-    const handleRemoveFromCart = (productId) => {
-        removeFromCart(productId); // Dispatch the removeFromCart action to remove the item from the cart
-    };
+    const filteredData = useSelector((state) => state.cart);
+    console.log(filteredData);
+    let dispatch = useDispatch();
+    const [title, setTitle] = useState('');
+    const [thumbnail, setThumbnail] = useState('');
+    const [price, setPrice] = useState('');
+    const [removeID, setRemoveID] = useState('');
+    function removeProduct() {
+        let removeProductList = {
+            title: title,
+            thumb: thumbnail,
+            price: price,
+            id: removeID
+        }
+        dispatch(removeFromCart(removeProductList));
+    }
 
-    const handleIncrementQuantity = (productId) => {
-        incrementQuantity(productId); // Dispatch the incrementQuantity action to increase the item quantity
-    };
-
-    const handleDecrementQuantity = (productId) => {
-        decrementQuantity(productId); // Dispatch the decrementQuantity action to decrease the item quantity
-    };
-
-    const total = calculateTotal(cartItems);
-
+    let total = 0;
     return (
-        <div className="cart-container">
-            <h2>Cart</h2>
-            {cartItems.length === 0 ? (
-                <p>Your cart is empty.</p>
-            ) : (
-                <div>
-                    <ul>
-                        {cartItems.map((item) => (
-                            <li className="cart-item" key={item.productId}>
-                                {item.productName} - ${item.productPrice} x {item.quantity}
-                                <button onClick={() => handleDecrementQuantity(item.productId)}>-</button>
-                                <button onClick={() => handleIncrementQuantity(item.productId)}>+</button>
-                                <button onClick={() => handleRemoveFromCart(item.productId)}>Remove</button>
-                            </li>
-                        ))}
-                    </ul>
-                    <p className="total">Total: ${total}</p>
+        (
+            <div className="cart_container">
+                <h2 style={{ textAlign: 'center' }}>Cart</h2>
+                <div className="inner_cart">
+
+
+                    <div className="posts-container">
+                        {
+                            filteredData.map((cart) => {
+                                if (cart.id != '') {
+                                    return (
+                                        <div className="inner-cart">
+                                            <div className="Cart_div">
+
+                                                <div className="post-card">
+                                                    <img src={cart.thumb}></img>
+                                                    <p className="post_title" >Title: {cart.title}</p>
+                                                    <p className="post_price">Price: ${cart.price}</p>
+                                                    <button onClick={() => {
+                                                        setTitle(cart.title);
+                                                        setThumbnail(cart.thumb);
+                                                        setPrice(cart.price)
+                                                        setRemoveID(cart.id);
+                                                        removeProduct();
+                                                    }}>Remove</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    )
+                                }
+
+                            })
+
+
+                        }
+                    </div>
+                    <div className="checklist">
+                        <div className="inner-cart">
+                            <table>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Price</th>
+                                </tr>
+                                <tr>
+                                    {
+                                        filteredData.map((check) => {
+
+                                            if (check.id != '') {
+                                                total = total + check.price
+                                                return (
+                                                    <div>
+                                                        <td>{check.title}</td>
+                                                        <td>{check.price}</td>
+
+                                                    </div>
+
+                                                )
+
+                                            }
+
+
+                                        })}
+                                    <div><tr>
+                                        <td>Total</td>
+                                        <td>
+                                            {total}
+                                        </td>
+                                    </tr></div>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-            )}
-        </div>
-    );
-};
+            </div>
 
-const mapStateToProps = (state) => {
-    return {
-        cartItems: state.cart,
-    };
-};
+        )
 
-const mapDispatchToProps = {
-    removeFromCart,
-    incrementQuantity,
-    decrementQuantity,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Cart);
-
-function calculateTotal(cartItems) {
-    return cartItems.reduce((total, item) => total + item.productPrice * item.quantity, 0);
+    )
 }
+export default Cart;
